@@ -95,6 +95,11 @@
   }
 }
 
+:root {
+  --travelmate-purple-rgb: 230, 230, 250; 
+  --travelmate-blue-rgb: 70, 130, 180;
+}
+
 .glass-card {
   @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-lg;
 }

@@ -183,7 +183,7 @@ const AddNewTripPage = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/trips")}
             >
               Cancel
             </Button>
