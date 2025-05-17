@@ -26,7 +26,6 @@ const LoginPage = () => {
     e.preventDefault();
     dispatch(clearError());
 
-    // Dispatch login action
     const resultAction = await dispatch(login({ username, password }));
 
     if (login.fulfilled.match(resultAction)) {
