@@ -13,10 +13,9 @@ const TripDetailsPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState("");
-  
-  // Find the trip with the matching ID
+
   const trip = trips.find(t => t.id === tripId);
-  
+
   if (!trip) {
     return (
       <div className="text-center py-12">
@@ -27,37 +26,37 @@ const TripDetailsPage = () => {
       </div>
     );
   }
-  
+
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
-    
+
     const newCommentObj = {
       id: `c${comments.length + 1}`,
-      userId: "m1", // Assuming current user is John Doe
+      userId: "m1",
       userName: "John Doe",
       userAvatar: "https://i.pravatar.cc/150?img=1",
       text: newComment,
       timestamp: new Date().toISOString()
     };
-    
+
     setComments([...comments, newCommentObj]);
     setNewComment("");
   };
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
-  
+
   const formatCommentDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -68,9 +67,9 @@ const TripDetailsPage = () => {
     <div className="container mx-auto">
       {/* Trip Header */}
       <div className="relative rounded-xl overflow-hidden h-64 mb-8">
-        <img 
-          src={trip.image} 
-          alt={trip.name} 
+        <img
+          src={trip.image}
+          alt={trip.name}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
@@ -79,8 +78,8 @@ const TripDetailsPage = () => {
               <h1 className="text-3xl font-bold text-white mb-2">{trip.name}</h1>
               <div className="flex items-center gap-4">
                 <Badge variant={trip.privacy === 'public' ? "default" : "secondary"}>
-                  {trip.privacy === 'public' ? 
-                    <><Globe className="mr-1 h-3 w-3" /> Public</> : 
+                  {trip.privacy === 'public' ?
+                    <><Globe className="mr-1 h-3 w-3" /> Public</> :
                     <><Lock className="mr-1 h-3 w-3" /> Private</>
                   }
                 </Badge>
@@ -95,7 +94,7 @@ const TripDetailsPage = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Trip Navigation */}
       <div className="flex overflow-x-auto pb-4 mb-8 gap-2">
         <Button asChild variant="outline">
@@ -122,7 +121,7 @@ const TripDetailsPage = () => {
           </Link>
         </Button>
       </div>
-      
+
       {/* Trip Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column */}
@@ -131,7 +130,7 @@ const TripDetailsPage = () => {
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">About This Trip</h2>
               <p className="text-gray-700 mb-6">{trip.description}</p>
-              
+
               <div className="mb-6">
                 <h3 className="font-medium mb-3">Destination</h3>
                 <div className="bg-muted/50 p-4 rounded-lg">
@@ -141,7 +140,7 @@ const TripDetailsPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <h3 className="font-medium mb-3">Discussion</h3>
               <div className="space-y-4">
                 {comments.map(comment => (
@@ -163,7 +162,7 @@ const TripDetailsPage = () => {
                     </div>
                   </div>
                 ))}
-                
+
                 <form onSubmit={handleAddComment} className="flex gap-4">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src="https://i.pravatar.cc/150?img=1" />
@@ -184,7 +183,7 @@ const TripDetailsPage = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Right Column */}
         <div>
           <Card className="mb-6">
@@ -211,7 +210,7 @@ const TripDetailsPage = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Quick Access</h2>
