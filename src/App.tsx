@@ -22,6 +22,7 @@ import ChecklistPage from "./pages/ChecklistPage";
 import MapPage from "./pages/MapPage";
 import NotFound from "./pages/NotFound";
 import TripsPage from "./pages/TripsPage.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,11 @@ const App = () => (
               <Route path="/trips/new" element={
                 <ProtectedRoute>
                   <Layout><AddNewTripPage /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout><ProfilePage /></Layout>
                 </ProtectedRoute>
               } />
               <Route path="/trips/:tripId" element={
