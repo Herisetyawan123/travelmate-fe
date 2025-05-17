@@ -1,28 +1,41 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux.ts";
+import { getAllTrips } from "@/store/tripSlice";
 import { Link } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TripCard } from "@/components/TripCard";
-import { trips } from "@/data/mockData";
+
+interface Trip {
+  id: number;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  thumbnail: string;
+}
+
 
 const MyTripsPage = () => {
+  const dispatch = useAppDispatch();
+  const { trips, loading } = useAppSelector((state) => state.trip);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const upcomingTrips = trips.filter(trip => trip.status === 'upcoming');
-  const pastTrips = trips.filter(trip => trip.status === 'past');
+  useEffect(() => {
+    dispatch(getAllTrips());
+  }, [dispatch]);
 
-  const filteredUpcomingTrips = upcomingTrips.filter(trip =>
+  const now = new Date();
+
+  const filteredTrips = trips.filter(trip =>
     trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    trip.destination.toLowerCase().includes(searchQuery.toLowerCase())
+    trip.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredPastTrips = pastTrips.filter(trip =>
-    trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    trip.destination.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const upcomingTrips = filteredTrips.filter(trip => new Date(trip.start_date) > now);
+  const pastTrips = filteredTrips.filter(trip => new Date(trip.end_date) < now);
 
   return (
     <div className="container mx-auto">
@@ -58,10 +71,11 @@ const MyTripsPage = () => {
         </TabsList>
 
         <TabsContent value="upcoming" className="space-y-6">
-          {filteredUpcomingTrips.length === 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : upcomingTrips.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-xl text-gray-500 mb-4">No upcoming trips found</p>
-
               <Button asChild>
                 <Link to="/trips/new">
                   <Plus className="mr-2 h-4 w-4" />
@@ -71,7 +85,7 @@ const MyTripsPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredUpcomingTrips.map(trip => (
+              {upcomingTrips.map(trip => (
                 <TripCard key={trip.id} trip={trip} />
               ))}
             </div>
@@ -79,13 +93,15 @@ const MyTripsPage = () => {
         </TabsContent>
 
         <TabsContent value="past" className="space-y-6">
-          {filteredPastTrips.length === 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : pastTrips.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500">No past trips found</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPastTrips.map(trip => (
+              {pastTrips.map(trip => (
                 <TripCard key={trip.id} trip={trip} />
               ))}
             </div>

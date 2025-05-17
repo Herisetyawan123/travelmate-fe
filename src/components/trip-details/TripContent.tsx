@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import { trips, comments as mockComments } from "@/data/mockData";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { CalendarDays, Map, PieChart, CheckSquare, Edit, Globe, Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import LoadingComponent from '../LoadingComponent';
 
 export default function TripContent() {
   const { tripId } = useParams<{ tripId: string }>();
+  const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState("");
 
@@ -44,15 +45,6 @@ export default function TripContent() {
     setNewComment("");
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
 
   const formatCommentDate = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -63,6 +55,12 @@ export default function TripContent() {
       minute: '2-digit'
     });
   };
+
+  if (loading) {
+    return (
+      <LoadingComponent message="Loading trip details..." />
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

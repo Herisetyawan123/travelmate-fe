@@ -2,7 +2,7 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // localStorage
 import authReducer from './authSlice.ts';
-
+import tripReducer from './tripSlice';
 const persistConfig = {
   key: 'root',
   storage,
@@ -11,6 +11,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  trip: tripReducer,
   // Add other reducers here
 });
 

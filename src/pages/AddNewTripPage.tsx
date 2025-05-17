@@ -2,12 +2,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  MapPin,
   Calendar,
-  Users,
   Globe,
   Lock,
-  ChevronLeft
+  ChevronLeft,
+  MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux.ts";
+import { addTrip } from '@/store/tripSlice';
+
 
 const AddNewTripPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [image, setImage] = useState<File | null>(null);
   const { toast } = useToast();
   const [formState, setFormState] = useState({
     name: "",
@@ -38,15 +42,34 @@ const AddNewTripPage = () => {
     setFormState((prev) => ({ ...prev, privacy: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send the data to an API
-    // Since this is a prototype, we'll just show a toast and navigate back
-    toast({
-      title: "Trip Created",
-      description: "Your new trip has been created successfully!",
-    });
-    navigate("/trips");
+    const formData = new FormData();
+    formData.append("name", formState.name);
+    formData.append("destination", formState.destination);
+    formData.append("start_date", formState.startDate);
+    formData.append("end_date", formState.endDate);
+    formData.append("description", formState.description);
+    formData.append("is_private", formState.privacy);
+    if (image) {
+      formData.append("thumbnail", image);
+    }
+
+    try {
+      console.log(formData.get("thumbnail"));
+      await dispatch(addTrip(formData)).unwrap(); // pakai redux thunk (lihat bawah)
+      toast({
+        title: "Berhasil",
+        description: "Trip berhasil dibuat!",
+      });
+      navigate("/mytrips");
+    } catch (err) {
+      toast({
+        title: "Gagal",
+        description: err as string,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -81,7 +104,7 @@ const AddNewTripPage = () => {
                   required
                 />
               </div>
-              {/* 
+
               <div className="space-y-2">
                 <Label htmlFor="destination">Destination</Label>
                 <div className="relative">
@@ -96,7 +119,18 @@ const AddNewTripPage = () => {
                     required
                   />
                 </div>
-              </div> */}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="image">Gambar Perjalanan</Label>
+                <Input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files?.[0] || null)}
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

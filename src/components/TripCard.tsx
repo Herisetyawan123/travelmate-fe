@@ -13,36 +13,36 @@ interface TripCardProps {
 function formatDateRange(startDate: string, endDate: string): string {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   const startMonth = start.toLocaleString('default', { month: 'short' });
   const endMonth = end.toLocaleString('default', { month: 'short' });
-  
+
   if (startMonth === endMonth) {
     return `${startMonth} ${start.getDate()} - ${end.getDate()}, ${start.getFullYear()}`;
   }
-  
+
   return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}, ${start.getFullYear()}`;
 }
 
 export function TripCard({ trip }: TripCardProps) {
-  const { id, name, destination, startDate, endDate, status, image, members } = trip;
-  
+  const { id, name, destination, startDate, endDate, status, thumbnail, members } = trip;
+
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative h-48 overflow-hidden">
         <img
-          src={image}
+          src={thumbnail}
           alt={name}
           className="w-full h-full object-cover"
         />
-        <Badge 
+        <Badge
           variant={status === 'upcoming' ? "default" : "secondary"}
           className="absolute top-3 right-3"
         >
           {status === 'upcoming' ? 'Upcoming' : 'Past'}
         </Badge>
       </div>
-      
+
       <CardHeader className="pb-2">
         <CardTitle className="text-xl line-clamp-1">{name}</CardTitle>
         <CardDescription className="flex items-center gap-1">
@@ -50,13 +50,13 @@ export function TripCard({ trip }: TripCardProps) {
           {destination}
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="pb-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
           <Calendar className="h-3.5 w-3.5" />
           <span>{formatDateRange(startDate, endDate)}</span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex -space-x-2">
             {members.slice(0, 3).map((member) => (
@@ -77,9 +77,9 @@ export function TripCard({ trip }: TripCardProps) {
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter>
-        <Link 
+        <Link
           to={`/trips/${id}`}
           className="text-travelmate-blue hover:text-travelmate-blue/80 text-sm font-medium"
         >
