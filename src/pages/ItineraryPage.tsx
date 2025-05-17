@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { itineraryItems as initialItems } from "@/data/mockData";
 
-// Get unique days from itinerary items
 const getDaysFromItems = (items: typeof initialItems) => {
   const days = [...new Set(items.map(item => item.day))].sort((a, b) => a - b);
   return days;
@@ -19,13 +18,13 @@ const ItineraryPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const [itineraryItems, setItineraryItems] = useState(initialItems);
   const [currentDay, setCurrentDay] = useState<number>(1);
-  
+
   const days = getDaysFromItems(itineraryItems);
-  
+
   const filteredItems = itineraryItems
     .filter(item => item.day === currentDay)
     .sort((a, b) => a.time.localeCompare(b.time));
-  
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'activity':
@@ -40,57 +39,54 @@ const ItineraryPage = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   const handleDragEnd = (result: DropResult) => {
     const { destination, source } = result;
-    
+
     if (!destination) return;
     if (destination.index === source.index) return;
-    
+
     const newItems = [...itineraryItems];
     const itemsForCurrentDay = newItems.filter(item => item.day === currentDay);
     const reorderedItem = itemsForCurrentDay[source.index];
-    
-    // Remove the item from its current position
+
     const nonDayItems = newItems.filter(item => item.day !== currentDay);
     const dayItems = newItems.filter(item => item.day === currentDay);
     dayItems.splice(source.index, 1);
-    
-    // Insert the item at the new position
+
     dayItems.splice(destination.index, 0, reorderedItem);
-    
-    // Combine all items back together
+
     setItineraryItems([...nonDayItems, ...dayItems]);
   };
-  
+
   const handleDeleteItem = (id: string) => {
     setItineraryItems(prev => prev.filter(item => item.id !== id));
   };
-  
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-travelmate-charcoal">Trip Itinerary</h1>
-          <p className="text-muted-foreground">Plan your daily activities</p>
+          <h1 className="text-2xl font-bold text-travelmate-charcoal">Jadwal Perjalanan</h1>
+          <p className="text-muted-foreground">Rancang aktivitas harian mu</p>
         </div>
         <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Activity
+          <Plus className="mr-2 h-4 w-4" /> Tambah Aktivitas
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Day Selection Sidebar */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Days</CardTitle>
+              <CardTitle>Hari</CardTitle>
             </CardHeader>
             <CardContent>
               {/* Mobile Day Selector */}
               <div className="block md:hidden mb-4">
-                <Select 
-                  value={currentDay.toString()} 
+                <Select
+                  value={currentDay.toString()}
                   onValueChange={(value) => setCurrentDay(parseInt(value))}
                 >
                   <SelectTrigger>
@@ -105,7 +101,7 @@ const ItineraryPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {/* Desktop Day List */}
               <div className="hidden md:flex md:flex-col space-y-2">
                 {days.map(day => (
@@ -119,18 +115,18 @@ const ItineraryPage = () => {
                   </Button>
                 ))}
                 <Button variant="ghost" className="justify-start">
-                  <Plus className="mr-2 h-4 w-4" /> Add Day
+                  <Plus className="mr-2 h-4 w-4" /> Tambah Hari
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Itinerary Content */}
         <div className="lg:col-span-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Day {currentDay} Schedule</CardTitle>
+              <CardTitle>Jadwal Hari {currentDay}</CardTitle>
               <Badge variant="outline" className="ml-2">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
               </Badge>

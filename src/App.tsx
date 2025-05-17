@@ -23,6 +23,7 @@ import MapPage from "./pages/MapPage";
 import NotFound from "./pages/NotFound";
 import TripsPage from "./pages/TripsPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
+import DashboardPage from "./pages/DashboardPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,11 @@ const App = () => (
               <Route path="/trips" element={
                 <ProtectedRoute>
                   <Layout><TripsPage /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout><DashboardPage /></Layout>
                 </ProtectedRoute>
               } />
               <Route path="/trips/new" element={

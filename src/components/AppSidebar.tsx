@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, User, Calendar, PieChart, CheckSquare, Map, LogOut, Menu, X, LocateIcon, PersonStanding } from "lucide-react";
+import { Home, User, Calendar, PieChart, CheckSquare, Map, LogOut, Menu, X, LocateIcon, PersonStanding, LocateFixedIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -61,8 +61,9 @@ export function AppSidebar() {
   };
 
   const links = [
-    { to: "/trips", icon: Home, label: "Perjalanan" },
-    { to: "/mytrips", icon: LocateIcon, label: "Perjalanan Saya" },
+    { to: "/dashboard", icon: Home, label: "Dashboard" },
+    { to: "/trips", icon: LocateIcon, label: "Perjalanan" },
+    { to: "/mytrips", icon: LocateFixedIcon, label: "Perjalanan Saya" },
     { to: "/profile", icon: PersonStanding, label: "Profile" },
     // { to: "/trips/1/budget", icon: PieChart, label: "Budget" },
     // { to: "/trips/1/checklist", icon: CheckSquare, label: "Checklist" },

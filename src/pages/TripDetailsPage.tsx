@@ -8,11 +8,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trips, comments as mockComments } from "@/data/mockData";
+import TripContent from "@/components/trip-details/TripContent";
+import ItineraryPage from "./ItineraryPage";
+import BudgetPage from "./BudgetPage";
+import ChecklistPage from "./ChecklistPage";
+import MapPage from "./MapPage";
+
+const pagesDetails = [
+  <TripContent />,
+  <ItineraryPage />,
+  <BudgetPage />,
+  <ChecklistPage />,
+  <MapPage />
+];
 
 const TripDetailsPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
-  const [comments, setComments] = useState(mockComments);
-  const [newComment, setNewComment] = useState("");
+  const [pgId, setPgId] = useState(0);
+  // const [comments, setComments] = useState(mockComments);
+  // const [newComment, setNewComment] = useState("");
 
   const trip = trips.find(t => t.id === tripId);
 
@@ -27,22 +41,22 @@ const TripDetailsPage = () => {
     );
   }
 
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim() === "") return;
+  // const handleAddComment = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (newComment.trim() === "") return;
 
-    const newCommentObj = {
-      id: `c${comments.length + 1}`,
-      userId: "m1",
-      userName: "John Doe",
-      userAvatar: "https://i.pravatar.cc/150?img=1",
-      text: newComment,
-      timestamp: new Date().toISOString()
-    };
+  //   const newCommentObj = {
+  //     id: `c${comments.length + 1}`,
+  //     userId: "m1",
+  //     userName: "John Doe",
+  //     userAvatar: "https://i.pravatar.cc/150?img=1",
+  //     text: newComment,
+  //     timestamp: new Date().toISOString()
+  //   };
 
-    setComments([...comments, newCommentObj]);
-    setNewComment("");
-  };
+  //   setComments([...comments, newCommentObj]);
+  //   setNewComment("");
+  // };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -53,15 +67,20 @@ const TripDetailsPage = () => {
     });
   };
 
-  const formatCommentDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // const formatCommentDate = (timestamp: string) => {
+  //   const date = new Date(timestamp);
+  //   return date.toLocaleDateString('en-US', {
+  //     month: 'short',
+  //     day: 'numeric',
+  //     hour: '2-digit',
+  //     minute: '2-digit'
+  //   });
+  // };
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: number) => {
+    e.preventDefault();
+    setPgId(id);
+  }
 
   return (
     <div className="container mx-auto">
@@ -98,148 +117,36 @@ const TripDetailsPage = () => {
       {/* Trip Navigation */}
       <div className="flex overflow-x-auto pb-4 mb-8 gap-2">
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}`} className="whitespace-nowrap">Overview</Link>
+          <Link to={`/trips/${tripId}`} onClick={(e) => handleClick(e, 0)} className="whitespace-nowrap">Overview</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/itinerary`} className="whitespace-nowrap">
-            <CalendarDays className="mr-2 h-4 w-4" /> Itinerary
+
+          <Link to={`/trips/${tripId}/itinerary`} onClick={(e) => handleClick(e, 1)} className="whitespace-nowrap">
+            <CalendarDays className="mr-2 h-4 w-4" /> Jadwal
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/budget`} className="whitespace-nowrap">
-            <PieChart className="mr-2 h-4 w-4" /> Budget
+          <Link to={`/trips/${tripId}/budget`} onClick={(e) => handleClick(e, 2)} className="whitespace-nowrap">
+            <PieChart className="mr-2 h-4 w-4" /> Angaran
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/checklist`} className="whitespace-nowrap">
+          <Link to={`/trips/${tripId}/checklist`} onClick={(e) => handleClick(e, 3)} className="whitespace-nowrap">
             <CheckSquare className="mr-2 h-4 w-4" /> Checklist
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/map`} className="whitespace-nowrap">
-            <Map className="mr-2 h-4 w-4" /> Map
+          <Link to={`/trips/${tripId}/map`} onClick={(e) => handleClick(e, 4)} className="whitespace-nowrap">
+            <Map className="mr-2 h-4 w-4" /> Destinasi Map
           </Link>
         </Button>
       </div>
 
-      {/* Trip Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">About This Trip</h2>
-              <p className="text-gray-700 mb-6">{trip.description}</p>
+      {
+        pagesDetails[pgId]
+      }
 
-              <div className="mb-6">
-                <h3 className="font-medium mb-3">Destination</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-travelmate-charcoal">
-                    <Map className="h-5 w-5" />
-                    <span className="font-medium">{trip.destination}</span>
-                  </div>
-                </div>
-              </div>
 
-              <h3 className="font-medium mb-3">Discussion</h3>
-              <div className="space-y-4">
-                {comments.map(comment => (
-                  <div key={comment.id} className="flex gap-4">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={comment.userAvatar} />
-                      <AvatarFallback>{comment.userName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-muted/50 rounded-lg p-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-medium">{comment.userName}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatCommentDate(comment.timestamp)}
-                          </span>
-                        </div>
-                        <p>{comment.text}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <form onSubmit={handleAddComment} className="flex gap-4">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src="https://i.pravatar.cc/150?img=1" />
-                    <AvatarFallback>JD</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 flex">
-                    <input
-                      type="text"
-                      className="flex-1 bg-muted/50 rounded-l-lg px-4 focus:outline-none focus:ring-1 focus:ring-travelmate-blue"
-                      placeholder="Add a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <Button type="submit" className="rounded-l-none">Post</Button>
-                  </div>
-                </form>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column */}
-        <div>
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Travelers</h2>
-              <div className="space-y-3">
-                {trip.members.map(member => (
-                  <div key={member.id} className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={member.avatar} />
-                      <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{member.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {member.role === 'admin' ? 'Trip Organizer' : 'Traveler'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="w-full mt-4">
-                  <Plus className="mr-2 h-4 w-4" /> Invite Traveler
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Quick Access</h2>
-              <div className="space-y-3">
-                <Button variant="outline" asChild className="w-full justify-start">
-                  <Link to={`/trips/${tripId}/itinerary`}>
-                    <CalendarDays className="mr-2 h-4 w-4" /> View Itinerary
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild className="w-full justify-start">
-                  <Link to={`/trips/${tripId}/budget`}>
-                    <PieChart className="mr-2 h-4 w-4" /> Manage Budget
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild className="w-full justify-start">
-                  <Link to={`/trips/${tripId}/checklist`}>
-                    <CheckSquare className="mr-2 h-4 w-4" /> Update Checklist
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild className="w-full justify-start">
-                  <Link to={`/trips/${tripId}/map`}>
-                    <Map className="mr-2 h-4 w-4" /> Explore Map
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </div>
   );
 };
