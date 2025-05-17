@@ -19,7 +19,7 @@ const LoginPage = () => {
 
 
   if (isAuthenticated) {
-    navigate('/dashboard');
+    navigate('/trips');
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ const LoginPage = () => {
     const resultAction = await dispatch(login({ username, password }));
 
     if (login.fulfilled.match(resultAction)) {
-      navigate('/dashboard');
+      navigate('/trips');
     } else {
       toast.error("Login failed", {
         description: error || "Invalid credentials. Try email: user@mail.com, password: password",

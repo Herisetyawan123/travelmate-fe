@@ -42,12 +42,12 @@ const HomePage = () => {
             Travel Planning Made <span className="text-travelmate-blue">Simple</span>
           </h1>
           <p className="text-xl text-gray-600 mb-10">
-            Plan your trips collaboratively with friends and family. 
+            Plan your trips collaboratively with friends and family.
             Create itineraries, track expenses, and make memories together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-travelmate-blue hover:bg-travelmate-blue/90">
-              <Link to="/dashboard">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/trips">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link to="/login">Login / Register</Link>
@@ -62,7 +62,7 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-center mb-12 text-travelmate-charcoal">
             Everything you need for <span className="text-travelmate-blue">perfect trips</span>
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -89,7 +89,7 @@ const HomePage = () => {
             Join TravelMate today and make your travel planning experience stress-free and enjoyable.
           </p>
           <Button asChild size="lg" className="bg-travelmate-blue hover:bg-travelmate-blue/90">
-            <Link to="/dashboard">Start Planning Now <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Link to="/trips">Start Planning Now <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
         </div>
       </section>

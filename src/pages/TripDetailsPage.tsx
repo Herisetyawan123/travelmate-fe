@@ -20,7 +20,7 @@ const TripDetailsPage = () => {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-4">Trip not found</h1>
-        <Link to="/dashboard" className="text-travelmate-blue hover:underline">
+        <Link to="/trips" className="text-travelmate-blue hover:underline">
           Back to Dashboard
         </Link>
       </div>

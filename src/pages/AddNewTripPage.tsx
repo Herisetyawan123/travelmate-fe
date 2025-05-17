@@ -46,7 +46,7 @@ const AddNewTripPage = () => {
       title: "Trip Created",
       description: "Your new trip has been created successfully!",
     });
-    navigate("/dashboard");
+    navigate("/trips");
   };
 
   return (
