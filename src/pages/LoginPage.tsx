@@ -1,0 +1,154 @@
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+
+const LoginPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Login successful!", {
+        description: "Welcome back to TravelMate!",
+      });
+    }, 1500);
+  };
+  
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Registration successful!", {
+        description: "Your account has been created.",
+      });
+    }, 1500);
+  };
+
+  return (
+    <div className="container flex items-center justify-center min-h-[80vh]">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center gap-2">
+            <div className="h-10 w-10 rounded-full bg-travelmate-blue flex items-center justify-center">
+              <span className="text-white font-bold text-xl">T</span>
+            </div>
+            <span className="font-bold text-2xl text-travelmate-blue">TravelMate</span>
+          </div>
+        </div>
+        
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="register">Register</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login">
+            <Card>
+              <CardHeader>
+                <CardTitle>Login</CardTitle>
+                <CardDescription>
+                  Enter your credentials to access your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin}>
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <Link to="#" className="text-sm text-travelmate-blue hover:underline">
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <Input id="password" type="password" />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? "Logging in..." : "Login"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+              <CardFooter>
+                <div className="text-center text-sm text-gray-500 w-full">
+                  Don't have an account? 
+                  <Link to="#" className="text-travelmate-blue hover:underline ml-1">
+                    Sign up
+                  </Link>
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="register">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create an account</CardTitle>
+                <CardDescription>
+                  Enter your information to create your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleRegister}>
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input id="name" type="text" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="register-email">Email</Label>
+                      <Input id="register-email" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="register-password">Password</Label>
+                      <Input id="register-password" type="password" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Input id="confirm-password" type="password" />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? "Creating account..." : "Create Account"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+              <CardFooter>
+                <div className="text-center text-sm text-gray-500 w-full">
+                  Already have an account? 
+                  <Link to="#" className="text-travelmate-blue hover:underline ml-1">
+                    Sign in
+                  </Link>
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+        </Tabs>
+        
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-travelmate-blue hover:underline">
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;
