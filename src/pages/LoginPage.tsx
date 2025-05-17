@@ -1,40 +1,58 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux.ts";
+import { login, clearError } from "@/store/authSlice";
 
 const LoginPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleLogin = (e: React.FormEvent) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+
+
+  if (isAuthenticated) {
+    navigate('/dashboard');
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Login successful!", {
-        description: "Welcome back to TravelMate!",
+    dispatch(clearError());
+
+    // Dispatch login action
+    const resultAction = await dispatch(login({ username, password }));
+
+    if (login.fulfilled.match(resultAction)) {
+      navigate('/dashboard');
+    } else {
+      toast.error("Login failed", {
+        description: error || "Invalid credentials. Try email: user@mail.com, password: password",
       });
-    }, 1500);
+    }
+
+    // toast.info("Registration is not implemented yet", {
+    //   description: "This is a prototype. Try logging in with email: user@mail.com, password: password",
+    // });
   };
-  
+
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Registration successful!", {
-        description: "Your account has been created.",
-      });
-    }, 1500);
+    // setIsLoading(true);
+
+    // // Simulate API call
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   toast.success("Registration successful!", {
+    //     description: "Your account has been created.",
+    //   });
+    // }, 1500);
   };
 
   return (
@@ -48,13 +66,13 @@ const LoginPage = () => {
             <span className="font-bold text-2xl text-travelmate-blue">TravelMate</span>
           </div>
         </div>
-        
+
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="login">
             <Card>
               <CardHeader>
@@ -67,8 +85,15 @@ const LoginPage = () => {
                 <form onSubmit={handleLogin}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="name@example.com" />
+                      <Label htmlFor="email">Username</Label>
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                      />
                     </div>
                     <div className="grid gap-2">
                       <div className="flex items-center justify-between">
@@ -77,17 +102,23 @@ const LoginPage = () => {
                           Forgot password?
                         </Link>
                       </div>
-                      <Input id="password" type="password" />
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Logging in..." : "Login"}
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Logging in..." : "Login"}
                     </Button>
                   </div>
                 </form>
               </CardContent>
               <CardFooter>
                 <div className="text-center text-sm text-gray-500 w-full">
-                  Don't have an account? 
+                  Don't have an account?
                   <Link to="#" className="text-travelmate-blue hover:underline ml-1">
                     Sign up
                   </Link>
@@ -95,7 +126,7 @@ const LoginPage = () => {
               </CardFooter>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="register">
             <Card>
               <CardHeader>
@@ -123,15 +154,15 @@ const LoginPage = () => {
                       <Label htmlFor="confirm-password">Confirm Password</Label>
                       <Input id="confirm-password" type="password" />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create Account"}
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Logging in..." : "Login"}
                     </Button>
                   </div>
                 </form>
               </CardContent>
               <CardFooter>
                 <div className="text-center text-sm text-gray-500 w-full">
-                  Already have an account? 
+                  Already have an account?
                   <Link to="#" className="text-travelmate-blue hover:underline ml-1">
                     Sign in
                   </Link>
@@ -140,7 +171,7 @@ const LoginPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
-        
+
         <div className="mt-8 text-center">
           <Link to="/" className="text-travelmate-blue hover:underline">
             Back to Home

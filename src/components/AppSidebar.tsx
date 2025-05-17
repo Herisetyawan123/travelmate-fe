@@ -1,10 +1,13 @@
 
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Home, User, Calendar, PieChart, CheckSquare, Map, LogOut, Menu, X } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, User, Calendar, PieChart, CheckSquare, Map, LogOut, Menu, X, LocateIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
+import { logout } from "@/store/authSlice";
+import { toast } from "sonner";
 
 interface SidebarLinkProps {
   to: string;
@@ -16,13 +19,13 @@ interface SidebarLinkProps {
 
 const SidebarLink = ({ to, icon: Icon, label, isActive, onClick }: SidebarLinkProps) => {
   return (
-    <NavLink 
-      to={to} 
+    <NavLink
+      to={to}
       onClick={onClick}
       className={cn(
         "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-        isActive 
-          ? "bg-sidebar-primary text-sidebar-primary-foreground" 
+        isActive
+          ? "bg-sidebar-primary text-sidebar-primary-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
@@ -35,8 +38,11 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, onClick }: SidebarLinkPr
 export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector(state => state.auth);
+
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -47,21 +53,28 @@ export function AppSidebar() {
     }
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logged out successfully");
+    navigate("/login");
+    closeSidebarOnMobile();
+  };
+
   const links = [
-    { to: "/", icon: Home, label: "Home" },
-    { to: "/dashboard", icon: User, label: "Dashboard" },
-    { to: "/trips/1/itinerary", icon: Calendar, label: "Itinerary" },
-    { to: "/trips/1/budget", icon: PieChart, label: "Budget" },
-    { to: "/trips/1/checklist", icon: CheckSquare, label: "Checklist" },
-    { to: "/trips/1/map", icon: Map, label: "Map" },
+    { to: "/trips", icon: Home, label: "Perjalanan" },
+    { to: "/mytrips", icon: LocateIcon, label: "Perjalanan Saya" },
+    // { to: "/trips/1/itinerary", icon: Calendar, label: "Itinerary" },
+    // { to: "/trips/1/budget", icon: PieChart, label: "Budget" },
+    // { to: "/trips/1/checklist", icon: CheckSquare, label: "Checklist" },
+    // { to: "/trips/1/map", icon: Map, label: "Map" },
   ];
 
   return (
     <>
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         size="icon"
-        onClick={toggleSidebar} 
+        onClick={toggleSidebar}
         className="fixed top-4 right-4 z-50 lg:hidden"
       >
         {isOpen ? <X /> : <Menu />}
@@ -80,7 +93,7 @@ export function AppSidebar() {
             <span className="font-bold text-xl text-travelmate-blue">TravelMate</span>
           </div>
         </div>
-        
+
         <div className="flex-1 py-6 space-y-2 px-2">
           {links.map((link) => (
             <SidebarLink
@@ -89,24 +102,34 @@ export function AppSidebar() {
               icon={link.icon}
               label={link.label}
               isActive={
-                link.to === "/" 
-                  ? location.pathname === "/" 
+                link.to === "/"
+                  ? location.pathname === "/"
                   : location.pathname.includes(link.to)
               }
               onClick={closeSidebarOnMobile}
             />
           ))}
         </div>
-        
+
         <div className="p-4 border-t mt-auto">
-          <NavLink 
-            to="/login"
-            onClick={closeSidebarOnMobile}
-            className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-primary"
-          >
-            <LogOut size={20} />
-            <span>Login / Register</span>
-          </NavLink>
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-primary w-full"
+            >
+              <LogOut size={20} />
+              <span>Logout</span>
+            </button>
+          ) : (
+            <NavLink
+              to="/login"
+              onClick={closeSidebarOnMobile}
+              className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-primary"
+            >
+              <LogOut size={20} />
+              <span>Login / Register</span>
+            </NavLink>
+          )}
         </div>
       </div>
     </>
