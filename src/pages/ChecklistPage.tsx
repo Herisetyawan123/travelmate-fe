@@ -1,53 +1,105 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { checklistItems as initialItems } from "@/data/mockData";
+import api from "@/utils/api";
+import { toast } from "sonner";
 
 // Group checklist items by category
-const groupItemsByCategory = (items: typeof initialItems) => {
+const groupItemsByCategory = (items: ChecklistItem[]) => {
   return items.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
     }
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, typeof initialItems>);
+  }, {} as Record<string, ChecklistItem[]>);
 };
 
 const formatCategoryName = (name: string) => {
   return name.charAt(0).toUpperCase() + name.slice(1);
 };
 
+interface ChecklistItem {
+  id: string;
+  description: string;
+  status: string;
+  category: string;
+}
+
 const ChecklistPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
-  const [checklistItems, setChecklistItems] = useState(initialItems);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  
+  const [open, setOpen] = useState(false);
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+
   const groupedItems = groupItemsByCategory(checklistItems);
   const categories = ["all", ...Object.keys(groupedItems)];
-  
-  const filteredItems = selectedCategory === "all" 
-    ? checklistItems 
+
+  useEffect(() => {
+    const fetchChecklistItems = async () => {
+      try {
+        const response = await api.get(`/api/trips/${tripId}/todos`);
+        setChecklistItems(response.data.data);
+      } catch (error) {
+        console.error("Error fetching checklist items:", error);
+      }
+    };
+
+    fetchChecklistItems();
+  }, [tripId]);
+
+  const filteredItems = selectedCategory === "all"
+    ? checklistItems
     : checklistItems.filter(item => item.category === selectedCategory);
-  
-  const completedCount = checklistItems.filter(item => item.completed).length;
+
+  const completedCount = checklistItems.filter(item => item.status).length;
   const progressPercentage = Math.round((completedCount / checklistItems.length) * 100);
-  
+
   const handleToggleItem = (id: string) => {
-    setChecklistItems(prev => 
-      prev.map(item => item.id === id ? { ...item, completed: !item.completed } : item)
+    setChecklistItems(prev =>
+      prev.map(item => item.id === id ? { ...item, status: item.status == "not_yet" ? "done" : "not_yet" } : item)
     );
   };
-  
+
   const handleDeleteItem = (id: string) => {
     setChecklistItems(prev => prev.filter(item => item.id !== id));
+    api.delete(`/api/trips/todos/${id}/delete`).then(() => {
+      toast.success("Checklist item deleted successfully!");
+    }).catch(error => {
+      console.error("Error deleting checklist item:", error);
+    });
   };
-  
+
+  const handleSubmit = () => {
+    if (!description.trim()) return;
+    setDescription("");
+    setCategory("");
+
+    api.post("/api/trips/todos/store", {
+      trip_id: tripId,
+      description,
+      category,
+    }).then(response => {
+      api.get(`/api/trips/${tripId}/todos`).then(response => {
+        setChecklistItems(response.data.data);
+        toast.success("Checklist item added successfully!");
+        console.log(groupItemsByCategory(response.data.data));
+      });
+    }).catch(error => {
+      console.error("Error adding checklist item:", error);
+    });
+    setOpen(false);
+  };
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -55,11 +107,11 @@ const ChecklistPage = () => {
           <h1 className="text-2xl font-bold text-travelmate-charcoal">Trip Checklist</h1>
           <p className="text-muted-foreground">Track items to pack and tasks to complete</p>
         </div>
-        <Button>
+        <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Add Item
         </Button>
       </div>
-      
+
       {/* Progress Bar */}
       <Card className="mb-6">
         <CardHeader className="pb-0">
@@ -72,7 +124,7 @@ const ChecklistPage = () => {
         </CardHeader>
         <CardContent className="pt-4">
           <div className="w-full bg-muted rounded-full h-4">
-            <div 
+            <div
               className="bg-travelmate-blue h-4 rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
             ></div>
@@ -82,7 +134,7 @@ const ChecklistPage = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Category Selection */}
         <div>
@@ -111,7 +163,7 @@ const ChecklistPage = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Checklist Items */}
         <div className="lg:col-span-3">
           <Card>
@@ -131,27 +183,27 @@ const ChecklistPage = () => {
               ) : (
                 <div className="space-y-2">
                   {filteredItems.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className={`flex items-center justify-between p-3 rounded-lg border ${item.completed ? 'bg-muted/50' : ''}`}
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${item.status ? 'bg-muted/50' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <Checkbox 
-                          checked={item.completed} 
+                        <Checkbox
+                          checked={item.status == 'done'}
                           onCheckedChange={() => handleToggleItem(item.id)}
                           id={item.id}
                         />
-                        <label 
+                        <label
                           htmlFor={item.id}
-                          className={`cursor-pointer ${item.completed ? 'line-through text-muted-foreground' : ''}`}
+                          className={`cursor-pointer ${item.status == 'done' ? 'line-through text-muted-foreground' : ''}`}
                         >
-                          {item.text}
+                          {item.description}
                         </label>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={() => handleDeleteItem(item.id)}
                       >
                         <X className="h-4 w-4" />
@@ -164,29 +216,27 @@ const ChecklistPage = () => {
           </Card>
         </div>
       </div>
-      
-      {/* Photo Gallery Section */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Trip Photos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="rounded-lg overflow-hidden h-48">
-                <div className="bg-gray-200 h-full w-full flex items-center justify-center">
-                  <span className="text-gray-500">Photo {item}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Add Photos
+      <Dialog open={open} onOpenChange={setOpen}>
+
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Checklist Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Description</Label>
+              <Input value={description} onChange={(e) => setDescription(e.target.value)} />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <Input value={category} onChange={(e) => setCategory(e.target.value)} />
+            </div>
+            <Button onClick={handleSubmit} className="w-full">
+              Add Item
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

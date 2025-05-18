@@ -1,20 +1,81 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import { Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { expenses as initialExpenses } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import api from "@/utils/api";
+import { toast } from "sonner";
 
-// Define colors for the pie chart
+interface ExpenseFormData {
+  id: string;
+  trip_id: string;
+  name: string;
+  amount: number;
+  date: string;
+  category: string;
+  notes: string;
+}
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const BudgetPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
-  const [expenses, setExpenses] = useState(initialExpenses);
-  
-  // Process data for the pie chart
+  const [expenses, setExpenses] = useState<ExpenseFormData[]>([]);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<ExpenseFormData>({
+    id: "",
+    name: "",
+    amount: 0,
+    date: "",
+    category: "",
+    notes: "",
+    trip_id: tripId || "",
+  });
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const response = await api.get(`/api/expenses?trip_id=${tripId}`);
+        setExpenses(response.data.data);
+      } catch (error) {
+        console.error("Error fetching expenses:", error);
+      }
+    };
+
+
+    fetchExpenses();
+  }, [tripId]);
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "amount" ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    // setForm({ ...form });
+    console.log(form);
+    api.post("/api/expenses/store", form).then((response) => {
+      api.get(`/api/expenses?trip_id=${tripId}`).then((response) => {
+        setOpen(false);
+        setExpenses(response.data.data);
+        toast.success("Expense added successfully!");
+      });
+    }).catch((error) => {
+      console.error("Error adding expense:", error);
+    });
+  };
+
   const pieChartData = Object.entries(
     expenses.reduce((acc, expense) => {
       if (!acc[expense.category]) {
@@ -24,14 +85,14 @@ const BudgetPage = () => {
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }));
-  
+
   // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
+
   const handleDeleteExpense = (id: string) => {
     setExpenses(prev => prev.filter(expense => expense.id !== id));
   };
-  
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -39,42 +100,12 @@ const BudgetPage = () => {
           <h1 className="text-2xl font-bold text-travelmate-charcoal">Trip Budget</h1>
           <p className="text-muted-foreground">Track and manage your expenses</p>
         </div>
-        <Button>
+        <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Add Expense
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Summary Cards */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Budget</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">${(totalExpenses + 500).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Spent</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">${totalExpenses.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Remaining</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">${(500).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-        </div>
-        
         {/* Pie Chart */}
         <div>
           <Card className="h-full">
@@ -94,7 +125,7 @@ const BudgetPage = () => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {pieChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -108,7 +139,7 @@ const BudgetPage = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Expense List */}
         <div className="lg:col-span-2">
           <Card>
@@ -121,9 +152,10 @@ const BudgetPage = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
+                      <th className="py-3 px-4 text-left">Name</th>
                       <th className="py-3 px-4 text-left">Category</th>
                       <th className="py-3 px-4 text-left">Description</th>
-                      <th className="py-3 px-4 text-left">Paid By</th>
+                      <th className="py-3 px-4 text-left">Date</th>
                       <th className="py-3 px-4 text-right">Amount</th>
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
@@ -132,12 +164,17 @@ const BudgetPage = () => {
                     {expenses.map((expense) => (
                       <tr key={expense.id} className="border-b last:border-0">
                         <td className="py-3 px-4">
+
+                          {expense.name}
+
+                        </td>
+                        <td className="py-3 px-4">
                           <span className="inline-block px-2 py-1 rounded-full text-xs bg-muted">
                             {expense.category}
                           </span>
                         </td>
-                        <td className="py-3 px-4">{expense.description}</td>
-                        <td className="py-3 px-4">{expense.paidBy}</td>
+                        <td className="py-3 px-4">{expense.notes}</td>
+                        <td className="py-3 px-4">{expense.date}</td>
                         <td className="py-3 px-4 text-right font-medium">${expense.amount.toFixed(2)}</td>
                         <td className="py-3 px-4 text-right">
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteExpense(expense.id)}>
@@ -153,6 +190,37 @@ const BudgetPage = () => {
           </Card>
         </div>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Expense</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input name="name" value={form.name} onChange={handleChange} />
+            </div>
+            <div>
+              <Label>Amount</Label>
+              <Input type="number" name="amount" value={form.amount} onChange={handleChange} />
+            </div>
+            <div>
+              <Label>Date</Label>
+              <Input type="date" name="date" value={form.date} onChange={handleChange} />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <Input name="category" value={form.category} onChange={handleChange} />
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea name="notes" value={form.notes} onChange={handleChange} />
+            </div>
+            <Button onClick={handleSubmit}>Submit</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
