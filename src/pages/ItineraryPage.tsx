@@ -16,6 +16,8 @@ import LoadingComponent from "@/components/LoadingComponent";
 import api from "@/utils/api";
 import { set } from "date-fns";
 import { toast } from "sonner";
+import { closeWebSocket, connectWebSocket } from "@/utils/websocket";
+
 const getDaysFromItems = (items: Activity[]) => {
   const days = [...new Set(items.map(item => item.order))].sort((a, b) => a - b);
   return days;
@@ -38,7 +40,7 @@ interface ItineraryItem {
   activities: Array<Activity>;
 }
 
-const ItineraryPage = ({ trip }: { trip: Trip }) => {
+const ItineraryPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([]);
   const [days, setDays] = useState<ItineraryItem[]>([]);
@@ -67,6 +69,18 @@ const ItineraryPage = ({ trip }: { trip: Trip }) => {
     };
 
     fetchItineraryItems();
+
+    connectWebSocket(tripId, (message) => {
+      if (message.event === "activity_created" || message.event === "activity_deleted" || message.event === "activity_updated") {
+        fetchItineraryItems();
+        console.log("WebSocket message received:", message.event);
+      }
+      console.log("WebSocket message received:", message.event);
+    });
+
+    return () => {
+      closeWebSocket();
+    };
   }, [tripId, currentDay]);
 
   useEffect(() => {

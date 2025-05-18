@@ -57,7 +57,7 @@ const TripsPage = () => {
               <p className="text-xl text-gray-500 mb-4">No upcoming trips found</p>
 
               <Button asChild>
-                <Link to="/trips/new">
+                <Link to="/mytrips/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Your First Trip
                 </Link>

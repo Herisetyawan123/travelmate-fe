@@ -83,9 +83,6 @@ const TripDetailsPage = () => {
                 </span>
               </div>
             </div>
-            <Button variant="secondary">
-              <Edit className="mr-2 h-4 w-4" /> Edit Trip
-            </Button>
           </div>
         </div>
       </div>
@@ -93,25 +90,25 @@ const TripDetailsPage = () => {
       {/* Navigation */}
       <div className="flex overflow-x-auto pb-4 mb-8 gap-2">
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}`} onClick={(e) => handleClick(e, 0)} className="whitespace-nowrap">Overview</Link>
+          <Link to={`/mytrips/${tripId}`} onClick={(e) => handleClick(e, 0)} className="whitespace-nowrap">Overview</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/itinerary`} onClick={(e) => handleClick(e, 1)} className="whitespace-nowrap">
+          <Link to={`/mytrips/${tripId}/itinerary`} onClick={(e) => handleClick(e, 1)} className="whitespace-nowrap">
             <CalendarDays className="mr-2 h-4 w-4" /> Jadwal
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/budget`} onClick={(e) => handleClick(e, 2)} className="whitespace-nowrap">
+          <Link to={`/mytrips/${tripId}/budget`} onClick={(e) => handleClick(e, 2)} className="whitespace-nowrap">
             <PieChart className="mr-2 h-4 w-4" /> Anggaran
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/checklist`} onClick={(e) => handleClick(e, 3)} className="whitespace-nowrap">
+          <Link to={`/mytrips/${tripId}/checklist`} onClick={(e) => handleClick(e, 3)} className="whitespace-nowrap">
             <CheckSquare className="mr-2 h-4 w-4" /> Checklist
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/trips/${tripId}/map`} onClick={(e) => handleClick(e, 4)} className="whitespace-nowrap">
+          <Link to={`/mytrips/${tripId}/map`} onClick={(e) => handleClick(e, 4)} className="whitespace-nowrap">
             <Map className="mr-2 h-4 w-4" /> Destinasi Map
           </Link>
         </Button>

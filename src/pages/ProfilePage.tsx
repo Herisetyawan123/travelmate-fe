@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,22 +8,85 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { trips } from "@/data/mockData";
 import { TripCard } from "@/components/TripCard";
+import api from "@/utils/api";
+import { toast } from "sonner";
 
 const ProfilePage = () => {
   const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    bio: "Travel enthusiast and adventure seeker. Always planning the next trip!",
+    username: "",
+    email: "",
   });
+  const [dashboardData, setDashboardData] = useState<{
+    total_trips: number,
+    upcoming_trips: number,
+    completed_trips: number
+  }>({
+    total_trips: 0,
+    upcoming_trips: 0,
+    completed_trips: 9
+  });
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordconfirmation, setNewPasswordConfirmation] = useState("");
 
-  const userTrips = trips.slice(0, 3); // Just show a few trips for demo
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        api.get('/api/dashboard')
+          .then((response) => {
+            console.log("Dashboard data:", response.data.data);
+            setDashboardData(response.data.data);
+          })
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+    fetchDashboardData();
+  }, []);
+  const userTrips = trips.slice(0, 3);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      api.get('/api/profile')
+        .then((response) => {
+          setUser(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    }
+    fetchUserData();
+  }, []);
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would save to the backend
-    alert("Profile saved successfully!");
-  };
+    try {
+      const response = await api.put('/api/profile/update', user);
+      console.log("Profile updated:", response.data);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  }
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== newPasswordconfirmation) {
+      toast.error("Password confirmation does not match");
+      return;
+    }
+
+    try {
+      const response = await api.put('/api/profile/update/password', {
+        new_password: newPassword
+      });
+      console.log("Password updated:", response.data);
+      toast.success("Password updated successfully");
+    } catch (error) {
+      console.error("Error updating password:", error);
+    }
+  }
 
   return (
     <div className="container mx-auto">
@@ -35,7 +98,6 @@ const ProfilePage = () => {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="trips">My Trips</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -45,24 +107,24 @@ const ProfilePage = () => {
             <Card>
               <CardContent className="pt-6 flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 mb-4">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+
+                  <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <h2 className="text-xl font-bold">{user.name}</h2>
+                <h2 className="text-xl font-bold">{user.username}</h2>
                 <p className="text-muted-foreground">{user.email}</p>
                 <Separator className="my-4" />
                 <div className="w-full">
                   <div className="flex justify-between py-2">
                     <span className="text-muted-foreground">Total Trips</span>
-                    <span className="font-medium">{trips.length}</span>
+                    <span className="font-medium">{dashboardData.total_trips}</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-muted-foreground">Upcoming</span>
-                    <span className="font-medium">{trips.filter(t => t.status === 'upcoming').length}</span>
+                    <span className="font-medium">{dashboardData.upcoming_trips}</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-muted-foreground">Completed</span>
-                    <span className="font-medium">{trips.filter(t => t.status === 'past').length}</span>
+                    <span className="font-medium">{dashboardData.completed_trips}</span>
                   </div>
                 </div>
               </CardContent>
@@ -75,13 +137,13 @@ const ProfilePage = () => {
                 <CardDescription>Update your personal information</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSaveProfile} className="space-y-4">
+                <form className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">username</Label>
                     <Input
                       id="name"
-                      value={user.name}
-                      onChange={(e) => setUser({ ...user, name: e.target.value })}
+                      value={user.username}
+                      onChange={(e) => setUser({ ...user, username: e.target.value })}
                     />
                   </div>
 
@@ -95,7 +157,7 @@ const ProfilePage = () => {
                     />
                   </div>
 
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" onClick={handleSubmit}>Save Changes</Button>
                 </form>
               </CardContent>
             </Card>
@@ -127,22 +189,17 @@ const ProfilePage = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Change Password</Label>
-                <Input id="password" type="password" placeholder="New password" />
+                <Input id="password" type="password" name="new_password" onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input id="confirmPassword" type="password" placeholder="Confirm new password" />
+                <Input id="confirmPassword" type="password" onChange={(e) => setNewPasswordConfirmation(e.target.value)} name="new_password_confirmation" placeholder="Confirm new password" />
               </div>
 
-              <Button>Update Password</Button>
+              <Button onClick={handleUpdatePassword}>Update Password</Button>
 
-              <Separator className="my-6" />
 
-              <div>
-                <h3 className="text-lg font-medium mb-4">Danger Zone</h3>
-                <Button variant="destructive">Delete Account</Button>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

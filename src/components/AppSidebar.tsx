@@ -1,29 +1,31 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, User, Calendar, PieChart, CheckSquare, Map, LogOut, Menu, X, LocateIcon, PersonStanding, LocateFixedIcon } from "lucide-react";
+import { Home, Bell, LogOut, Menu, X, LocateIcon, PersonStanding, LocateFixedIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
 import { logout } from "@/store/authSlice";
 import { toast } from "sonner";
+import api from "@/utils/api";
 
 interface SidebarLinkProps {
   to: string;
   icon: React.ElementType;
   label: string;
   isActive: boolean;
+  badgeCount?: number;
   onClick?: () => void;
 }
 
-const SidebarLink = ({ to, icon: Icon, label, isActive, onClick }: SidebarLinkProps) => {
+const SidebarLink = ({ to, icon: Icon, label, badgeCount, isActive, onClick }: SidebarLinkProps) => {
   return (
     <NavLink
       to={to}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative",
         isActive
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -31,6 +33,13 @@ const SidebarLink = ({ to, icon: Icon, label, isActive, onClick }: SidebarLinkPr
     >
       <Icon size={20} />
       <span>{label}</span>
+
+      {/* Badge */}
+      {badgeCount && badgeCount > 0 && (
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+          {badgeCount}
+        </span>
+      )}
     </NavLink>
   );
 };
@@ -41,7 +50,24 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();
+  const [notificationCount, setNotificationCount] = useState(3);
   const { isAuthenticated } = useAppSelector(state => state.auth);
+
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      api.get("/api/notifications")
+        .then((response) => {
+          const notifications = response.data;
+          setNotificationCount(notifications.filter((notif) => !notif.read).length);
+        })
+        .catch((error) => {
+          console.error("Error fetching notifications:", error);
+        });
+    }
+
+    fetchNotifications();
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -62,12 +88,9 @@ export function AppSidebar() {
 
   const links = [
     { to: "/dashboard", icon: Home, label: "Dashboard" },
-    { to: "/trips", icon: LocateIcon, label: "Perjalanan" },
     { to: "/mytrips", icon: LocateFixedIcon, label: "Perjalanan Saya" },
     { to: "/profile", icon: PersonStanding, label: "Profile" },
-    // { to: "/trips/1/budget", icon: PieChart, label: "Budget" },
-    // { to: "/trips/1/checklist", icon: CheckSquare, label: "Checklist" },
-    // { to: "/trips/1/map", icon: Map, label: "Map" },
+    { to: "/notifications", icon: Bell, label: "Notifikasi", hasBadge: true },
   ];
 
   return (
@@ -108,6 +131,7 @@ export function AppSidebar() {
                   : location.pathname.includes(link.to)
               }
               onClick={closeSidebarOnMobile}
+              badgeCount={link.hasBadge ? notificationCount : undefined}
             />
           ))}
         </div>

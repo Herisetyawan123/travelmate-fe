@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import TripsPage from "./pages/TripsPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import DashboardPage from "./pages/DashboardPage.tsx";
+import NotificationsPage from "./pages/NotificationPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -55,7 +56,7 @@ const App = () => (
                   <Layout><DashboardPage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/new" element={
+              <Route path="/mytrips/new" element={
                 <ProtectedRoute>
                   <Layout><AddNewTripPage /></Layout>
                 </ProtectedRoute>
@@ -65,27 +66,32 @@ const App = () => (
                   <Layout><ProfilePage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/:tripId" element={
+              <Route path="/mytrips/:tripId" element={
                 <ProtectedRoute>
                   <Layout><TripDetailsPage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/:tripId/itinerary" element={
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <Layout><NotificationsPage /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/mytrips/:tripId/itinerary" element={
                 <ProtectedRoute>
                   <Layout><ItineraryPage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/:tripId/budget" element={
+              <Route path="/mytrips/:tripId/budget" element={
                 <ProtectedRoute>
                   <Layout><BudgetPage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/:tripId/checklist" element={
+              <Route path="/mytrips/:tripId/checklist" element={
                 <ProtectedRoute>
                   <Layout><ChecklistPage /></Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/trips/:tripId/map" element={
+              <Route path="/mytrips/:tripId/map" element={
                 <ProtectedRoute>
                   <Layout><MapPage /></Layout>
                 </ProtectedRoute>

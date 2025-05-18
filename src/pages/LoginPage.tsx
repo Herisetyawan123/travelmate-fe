@@ -9,17 +9,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux.ts";
 import { login, clearError } from "@/store/authSlice";
+import api from "@/utils/api";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth);
 
 
   if (isAuthenticated) {
-    navigate('/trips');
+    navigate('/dashboard');
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -29,7 +32,7 @@ const LoginPage = () => {
     const resultAction = await dispatch(login({ username, password }));
 
     if (login.fulfilled.match(resultAction)) {
-      navigate('/trips');
+      navigate('/dashboard');
     } else {
       toast.error("Login failed", {
         description: error || "Invalid credentials. Try email: user@mail.com, password: password",
@@ -43,15 +46,27 @@ const LoginPage = () => {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // setIsLoading(true);
+    setIsLoading(true);
+    api.post("/api/register", {
+      username,
+      email,
+      password,
+    })
+      .then((response) => {
+        toast.success("Registration successful", {
+          description: "You can now log in with your credentials",
+        });
+        setIsLoading(false);
+        navigate("/login");
+      })
+      .catch((error) => {
+        toast.error("Registration failed", {
+          description: error.response.data.message,
+        });
+        setIsLoading(false);
+      }
+      )
 
-    // // Simulate API call
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   toast.success("Registration successful!", {
-    //     description: "Your account has been created.",
-    //   });
-    // }, 1500);
   };
 
   return (
@@ -84,7 +99,7 @@ const LoginPage = () => {
                 <form onSubmit={handleLogin}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="email">Username</Label>
+                      <Label htmlFor="username">Username</Label>
                       <Input
                         id="username"
                         type="text"
@@ -138,23 +153,20 @@ const LoginPage = () => {
                 <form onSubmit={handleRegister}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" type="text" />
+                      <Label htmlFor="register-email">Username</Label>
+                      <Input id="register-username" value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="xcom" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="register-email">Email</Label>
-                      <Input id="register-email" type="email" placeholder="name@example.com" />
+                      <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="name@example.com" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="register-password">Password</Label>
-                      <Input id="register-password" type="password" />
+                      <Input id="register-password" onChange={(e) => setPassword(e.target.value)} type="password" />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
-                      <Input id="confirm-password" type="password" />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Logging in..." : "Login"}
+
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? "Register in..." : "Register"}
                     </Button>
                   </div>
                 </form>

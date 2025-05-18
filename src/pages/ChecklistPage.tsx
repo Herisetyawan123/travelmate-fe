@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import api from "@/utils/api";
 import { toast } from "sonner";
+import { closeWebSocket, connectWebSocket } from "@/utils/websocket";
 
 // Group checklist items by category
 const groupItemsByCategory = (items: ChecklistItem[]) => {
@@ -44,6 +45,9 @@ const ChecklistPage = () => {
   const groupedItems = groupItemsByCategory(checklistItems);
   const categories = ["all", ...Object.keys(groupedItems)];
 
+
+
+
   useEffect(() => {
     const fetchChecklistItems = async () => {
       try {
@@ -53,20 +57,40 @@ const ChecklistPage = () => {
         console.error("Error fetching checklist items:", error);
       }
     };
-
     fetchChecklistItems();
+
+
+    connectWebSocket(tripId, (message) => {
+      if (message.event === "todo_created" || message.event === "todo_deleted" || message.event === "todo_updated") {
+        fetchChecklistItems();
+        console.log("WebSocket message received:", message.event);
+      }
+    });
+
+    return () => {
+      closeWebSocket();
+    };
   }, [tripId]);
 
   const filteredItems = selectedCategory === "all"
     ? checklistItems
     : checklistItems.filter(item => item.category === selectedCategory);
 
-  const completedCount = checklistItems.filter(item => item.status).length;
+  const completedCount = checklistItems.filter(item => item.status == "done").length;
   const progressPercentage = Math.round((completedCount / checklistItems.length) * 100);
 
   const handleToggleItem = (id: string) => {
     setChecklistItems(prev =>
-      prev.map(item => item.id === id ? { ...item, status: item.status == "not_yet" ? "done" : "not_yet" } : item)
+      prev.map(item => {
+        if (item.id === id) {
+          const newStatus = item.status === "done" ? "not_done" : "done";
+          api.put(`/api/trips/todos/${id}/edit`, { status: newStatus }).then(() => {
+            toast.success("Checklist item updated successfully!");
+          })
+          return { ...item, status: newStatus };
+        }
+        return item;
+      })
     );
   };
 

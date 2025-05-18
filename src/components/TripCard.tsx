@@ -86,7 +86,7 @@ export function TripCard({ trip }: TripCardProps) {
 
       <CardFooter>
         <Link
-          to={`/trips/${id}`}
+          to={`/mytrips/${id}`}
           className="text-travelmate-blue hover:text-travelmate-blue/80 text-sm font-medium"
         >
           View Details
