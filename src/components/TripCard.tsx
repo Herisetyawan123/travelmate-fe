@@ -25,7 +25,13 @@ function formatDateRange(startDate: string, endDate: string): string {
 }
 
 export function TripCard({ trip }: TripCardProps) {
-  const { id, name, destination, startDate, endDate, status, thumbnail, members } = trip;
+  const { id, name, destination, start_date, end_date, thumbnail, members } = trip;
+
+  // status by date
+  const now = new Date();
+  const isUpcoming = new Date(start_date) > now;
+  const isPast = new Date(end_date) < now;
+  const status = isUpcoming ? 'upcoming' : isPast ? 'past' : 'ongoing';
 
   return (
     <Card className="h-full overflow-hidden hover:shadow-md transition-shadow">
@@ -54,7 +60,7 @@ export function TripCard({ trip }: TripCardProps) {
       <CardContent className="pb-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
           <Calendar className="h-3.5 w-3.5" />
-          <span>{formatDateRange(startDate, endDate)}</span>
+          <span>{formatDateRange(start_date, end_date)}</span>
         </div>
 
         <div className="flex items-center justify-between">

@@ -22,7 +22,7 @@ export const fetchTripById = createAsyncThunk(
   async (tripId: string, { rejectWithValue }) => {
     try {
       const res = await api.get(`/api/trips/${tripId}`);
-      return res.data;
+      return res.data.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Trip tidak ditemukan');
     }

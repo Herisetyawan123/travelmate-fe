@@ -3,18 +3,25 @@ export interface Trip {
   id: string;
   name: string;
   destination: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   status: 'upcoming' | 'past';
-  image: string;
+  thumbnail: string;
   description: string;
   members: Member[];
+  comments?: {
+    id: string;
+    user_id: number;
+    username: string;
+    content: string;
+    created_at: string;
+  }[];
   privacy: 'public' | 'private';
 }
 
 export interface Member {
-  id: string;
-  name: string;
+  user_id: string;
+  username: string;
   avatar: string;
   role: 'admin' | 'member';
 }

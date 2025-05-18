@@ -1,20 +1,26 @@
 import React, { useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
-import { trips, comments as mockComments } from "@/data/mockData";
+import { trips, comments as mockComments, Trip } from "@/data/mockData";
 
 import { CalendarDays, Map, PieChart, CheckSquare, Edit, Globe, Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import LoadingComponent from '../LoadingComponent';
 
-export default function TripContent() {
+
+interface Comment {
+  id: string;
+  user_id: number;
+  user_name: string;
+  userAvatar: string;
+  text: string;
+  timestamp: string;
+}
+
+export default function TripContent({ trip }: { trip: Trip }) {
   const { tripId } = useParams<{ tripId: string }>();
-  const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState("");
-
-  const trip = trips.find(t => t.id === tripId);
 
   if (!trip) {
     return (
@@ -56,19 +62,13 @@ export default function TripContent() {
     });
   };
 
-  if (loading) {
-    return (
-      <LoadingComponent message="Loading trip details..." />
-    );
-  }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Left Column */}
       <div className="lg:col-span-2">
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-4">About This Trip</h2>
+            <h2 className="text-xl font-semibold mb-4">Tentang trip ini</h2>
             <p className="text-gray-700 mb-6">{trip.description}</p>
 
             <div className="mb-6">
@@ -83,21 +83,21 @@ export default function TripContent() {
 
             <h3 className="font-medium mb-3">Discussion</h3>
             <div className="space-y-4">
-              {comments.map(comment => (
+              {trip.comments.map(comment => (
                 <div key={comment.id} className="flex gap-4">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={comment.userAvatar} />
-                    <AvatarFallback>{comment.userName.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={'https://i.pravatar.cc/150?img=1'} />
+                    <AvatarFallback>{comment.username}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="bg-muted/50 rounded-lg p-3">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-medium">{comment.userName}</span>
+                        <span className="font-medium">{comment.username}</span>
                         <span className="text-xs text-muted-foreground">
-                          {formatCommentDate(comment.timestamp)}
+                          {formatCommentDate(comment.created_at)}
                         </span>
                       </div>
-                      <p>{comment.text}</p>
+                      <p>{comment.content}</p>
                     </div>
                   </div>
                 </div>
@@ -131,13 +131,13 @@ export default function TripContent() {
             <h2 className="text-xl font-semibold mb-4">Petualang</h2>
             <div className="space-y-3">
               {trip.members.map(member => (
-                <div key={member.id} className="flex items-center gap-3">
+                <div key={member.user_id} className="flex items-center gap-3">
                   <Avatar>
                     <AvatarImage src={member.avatar} />
-                    <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{member.username}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">{member.name}</div>
+                    <div className="font-medium">{member.username}</div>
                     <div className="text-sm text-muted-foreground">
                       {member.role === 'admin' ? 'Trip Organizer' : 'Traveler'}
                     </div>

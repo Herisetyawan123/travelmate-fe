@@ -1,62 +1,48 @@
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store"; // pastikan path sesuai
+import { fetchTripById } from "@/store/tripSlice";
 
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { CalendarDays, Map, PieChart, CheckSquare, Edit, Globe, Lock, Plus } from "lucide-react";
+import {
+  CalendarDays, Map, PieChart, CheckSquare, Edit, Globe, Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { trips, comments as mockComments } from "@/data/mockData";
+
 import TripContent from "@/components/trip-details/TripContent";
 import ItineraryPage from "./ItineraryPage";
 import BudgetPage from "./BudgetPage";
 import ChecklistPage from "./ChecklistPage";
 import MapPage from "./MapPage";
 
-const pagesDetails = [
-  <TripContent />,
-  <ItineraryPage />,
-  <BudgetPage />,
-  <ChecklistPage />,
-  <MapPage />
-];
 
 const TripDetailsPage = () => {
   const { tripId } = useParams<{ tripId: string }>();
+  const dispatch = useDispatch<AppDispatch>();
   const [pgId, setPgId] = useState(0);
-  // const [comments, setComments] = useState(mockComments);
-  // const [newComment, setNewComment] = useState("");
 
-  const trip = trips.find(t => t.id === tripId);
+  const { trip, loading, error } = useSelector((state: RootState) => state.trip);
 
-  if (!trip) {
-    return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold mb-4">Trip not found</h1>
-        <Link to="/trips" className="text-travelmate-blue hover:underline">
-          Back to Dashboard
-        </Link>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (tripId) {
+      dispatch(fetchTripById(tripId));
+    }
+  }, [dispatch, tripId]);
 
-  // const handleAddComment = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (newComment.trim() === "") return;
+  if (loading) return
+  <p className="text-center py-12">Loading trip data...</p>;
 
-  //   const newCommentObj = {
-  //     id: `c${comments.length + 1}`,
-  //     userId: "m1",
-  //     userName: "John Doe",
-  //     userAvatar: "https://i.pravatar.cc/150?img=1",
-  //     text: newComment,
-  //     timestamp: new Date().toISOString()
-  //   };
+  if (error) return (
+    <div className="text-center py-12">
+      <h1 className="text-2xl font-bold mb-4">{error}</h1>
+      <Link to="/trips" className="text-travelmate-blue hover:underline">
+        Back to Dashboard
+      </Link>
+    </div>
+  );
 
-  //   setComments([...comments, newCommentObj]);
-  //   setNewComment("");
-  // };
+  if (!trip) return null;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -67,27 +53,17 @@ const TripDetailsPage = () => {
     });
   };
 
-  // const formatCommentDate = (timestamp: string) => {
-  //   const date = new Date(timestamp);
-  //   return date.toLocaleDateString('en-US', {
-  //     month: 'short',
-  //     day: 'numeric',
-  //     hour: '2-digit',
-  //     minute: '2-digit'
-  //   });
-  // };
-
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: number) => {
     e.preventDefault();
     setPgId(id);
-  }
+  };
 
   return (
     <div className="container mx-auto">
-      {/* Trip Header */}
+      {/* Header */}
       <div className="relative rounded-xl overflow-hidden h-64 mb-8">
         <img
-          src={trip.image}
+          src={trip.thumbnail}
           alt={trip.name}
           className="w-full h-full object-cover"
         />
@@ -96,14 +72,14 @@ const TripDetailsPage = () => {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">{trip.name}</h1>
               <div className="flex items-center gap-4">
-                <Badge variant={trip.privacy === 'public' ? "default" : "secondary"}>
-                  {trip.privacy === 'public' ?
+                <Badge variant={trip.is_private ? "default" : "secondary"}>
+                  {trip.is_private ?
                     <><Globe className="mr-1 h-3 w-3" /> Public</> :
                     <><Lock className="mr-1 h-3 w-3" /> Private</>
                   }
                 </Badge>
                 <span className="text-white/90 text-sm">
-                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                  {formatDate(trip.start_date)} - {formatDate(trip.end_date)}
                 </span>
               </div>
             </div>
@@ -114,20 +90,19 @@ const TripDetailsPage = () => {
         </div>
       </div>
 
-      {/* Trip Navigation */}
+      {/* Navigation */}
       <div className="flex overflow-x-auto pb-4 mb-8 gap-2">
         <Button asChild variant="outline">
           <Link to={`/trips/${tripId}`} onClick={(e) => handleClick(e, 0)} className="whitespace-nowrap">Overview</Link>
         </Button>
         <Button asChild variant="outline">
-
           <Link to={`/trips/${tripId}/itinerary`} onClick={(e) => handleClick(e, 1)} className="whitespace-nowrap">
             <CalendarDays className="mr-2 h-4 w-4" /> Jadwal
           </Link>
         </Button>
         <Button asChild variant="outline">
           <Link to={`/trips/${tripId}/budget`} onClick={(e) => handleClick(e, 2)} className="whitespace-nowrap">
-            <PieChart className="mr-2 h-4 w-4" /> Angaran
+            <PieChart className="mr-2 h-4 w-4" /> Anggaran
           </Link>
         </Button>
         <Button asChild variant="outline">
@@ -142,11 +117,21 @@ const TripDetailsPage = () => {
         </Button>
       </div>
 
+      {/* Content */}
+
       {
-        pagesDetails[pgId]
+        pgId === 0 ? (
+          <TripContent trip={trip} />
+        ) : pgId === 1 ? (
+          <ItineraryPage />
+        ) : pgId === 2 ? (
+          <BudgetPage />
+        ) : pgId === 3 ? (
+          <ChecklistPage />
+        ) : pgId === 4 ? (
+          <MapPage />
+        ) : null
       }
-
-
     </div>
   );
 };
